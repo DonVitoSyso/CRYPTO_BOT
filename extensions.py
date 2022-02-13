@@ -36,4 +36,4 @@ class ValuesConvert():
         # content = {'status': 200, 'message': 'rates', 'data': {'USDRUB': '64.1824'}}
         txt_API_json = json.loads(r.content)['data'][f'{values[base]}{values[quote]}']
 
-        return base, quote, amount, txt_API_json
+        return base, quote, amount, float(txt_API_json)*float(amount)

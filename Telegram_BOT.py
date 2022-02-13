@@ -28,10 +28,16 @@ def hendel_values(message: telebot.types.Message):
 # Запрос цены валют
 @bot.message_handler(content_types=['text', ])
 def hendel_convert(message: telebot.types.Message):
-    vals = message.text.split(' ')
-    base, quote, amount, txt_API_json = ValuesConvert.get_price(vals)
-    text = f'Цена {amount} {base} в {quote} - {txt_API_json}'
-    bot.send_message(message.chat.id, text)
+    try:
+        vals = message.text.split(' ')
+        base, quote, amount, txt_API_json = ValuesConvert.get_price(vals)
+    except APIException as e:
+        raise bot.reply_to(message, f'Ошибка пользователя.\n {e}')
+    except Exception as e:
+        raise bot.reply_to(message,f'Ошибка системы. Не удалось обработать команду!\n {e}')
+    else:
+        text = f'Цена {amount} {base} в {quote} - {txt_API_json}'
+        bot.send_message(message.chat.id, text)
 
 
 bot.polling(non_stop=True)
