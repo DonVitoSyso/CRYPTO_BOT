@@ -1,6 +1,7 @@
 import telebot
 from utils import TOKEN, values
 from extensions import ValuesConvert, APIException
+import traceback
 
 bot = telebot.TeleBot(TOKEN)
 
@@ -30,13 +31,13 @@ def hendel_values(message: telebot.types.Message):
 def hendel_convert(message: telebot.types.Message):
     try:
         vals = message.text.split(' ')
-        base, quote, amount, txt_API_json = ValuesConvert.get_price(vals)
+        text = ValuesConvert.get_price(vals)
     except APIException as e:
-        raise bot.reply_to(message, f'Ошибка пользователя.\n {e}')
+        bot.reply_to(message, f'Ошибка пользователя.\n {e}')
     except Exception as e:
-        raise bot.reply_to(message,f'Ошибка системы. Не удалось обработать команду!\n {e}')
+        traceback.print_tb(e.__traceback__)
+        bot.reply_to(message,f'Ошибка системы. Не удалось обработать команду!\n {e}')
     else:
-        text = f'Цена {amount} {base} в {quote} - {txt_API_json}'
         bot.send_message(message.chat.id, text)
 
 
