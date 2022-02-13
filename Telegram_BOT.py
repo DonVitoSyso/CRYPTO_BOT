@@ -30,7 +30,7 @@ def hendel_values(message: telebot.types.Message):
 @bot.message_handler(content_types=['text', ])
 def hendel_convert(message: telebot.types.Message):
     try:
-        vals = message.text.split(' ')
+        vals = message.text.split()
         text = ValuesConvert.get_price(vals)
     except APIException as e:
         bot.reply_to(message, f'Ошибка пользователя.\n {e}')
