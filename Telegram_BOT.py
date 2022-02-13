@@ -1,25 +1,8 @@
-import json
-
-import requests
 import telebot
-
-
-TOKEN = "5180656271:AAEqHmDgVzGDSyd6DujBVELqB6h-DaBcyY8"
+from utils import TOKEN, values
+from extensions import ValuesConvert, APIException
 
 bot = telebot.TeleBot(TOKEN)
-# используем API сайта https://www.currate.ru
-# https://currate.ru/api/?get=rates&pairs=USDRUB,EURRUB&key=10e8880027ea415e69b7711a2525078
-key_API = '10e8880027ea415e69b7711a2525078c'
-
-values = {
-    'рубль': 'RUB',
-    'доллар': 'USD',
-    'евро': 'EUR',
-}
-
-
-class APIException(Exception):
-    pass
 
 # Обрабатывает все сообщения, содержащие команды '/start' or '/help'
 @bot.message_handler(commands=['help', 'start', ])
@@ -46,35 +29,8 @@ def hendel_values(message: telebot.types.Message):
 @bot.message_handler(content_types=['text', ])
 def hendel_convert(message: telebot.types.Message):
     vals = message.text.split(' ')
-
-    # Обрабатываем исключения
-    if len(vals) != 3:
-        raise APIException(f'Неверный запрос. Вводить запрос в одну строку через пробел - 3 параметра')
-    qt, bs, amnt = vals
-
-    try:
-        amnt = float(amnt)
-    except ValueError:
-        raise APIException(f'Не удалось обработать {amnt}. Количество ввалют должно быть введенно цифрой')
-
-    try:
-        qt_ = values[qt]
-    except KeyError:
-        raise APIException(f'Не удалось обработать валюту {qt_}.')
-
-    try:
-        bs_ = values[bs]
-    except KeyError:
-        raise APIException(f'Не удалось обработать валюту {bs_}.')
-
-    if qt == bs:
-        raise APIException(f'Валюта {qt} не может быть переведена в валюту {bs} - одинаковые!')
-
-
-    r = requests.get(f'https://currate.ru/api/?get=rates&pairs={values[qt]}{values[bs]}&key={key_API}')
-    # content = {'status': 200, 'message': 'rates', 'data': {'USDRUB': '64.1824'}}
-    txt_API_json = json.loads(r.content)['data'][f'{values[qt]}{values[bs]}']
-    text = f'Цена {amnt} {qt} в {bs} - {txt_API_json}'
+    base, quote, amount, txt_API_json = ValuesConvert.get_price(vals)
+    text = f'Цена {amount} {base} в {quote} - {txt_API_json}'
     bot.send_message(message.chat.id, text)
 
 
